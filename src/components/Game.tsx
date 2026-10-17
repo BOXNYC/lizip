@@ -156,6 +156,7 @@ export default function Game({ difficulty, number, onBack, onNext }: GameProps) 
             if (next) update(next);
           }}
           onDrag={(cell) => update(moveToward(ix, pathRef.current, cell))}
+          canMoveTo={(cell) => stepTo(ix, path, cell) !== null}
           onRelease={() => {
             const start = gestureStart.current;
             gestureStart.current = null;
