@@ -76,7 +76,7 @@ export default function PuzzleList({ difficulty, onDifficulty, onPlay }: PuzzleL
               <button
                 onClick={() => onPlay(i + 1)}
                 aria-label={`Puzzle ${i + 1}${r ? `, solved in ${formatTime(r.best)}` : ""}`}
-                className={`relative flex aspect-square w-full flex-col items-center justify-center rounded-xl border text-base font-semibold transition hover:-translate-y-0.5 hover:shadow-md ${
+                className={`relative flex aspect-square w-full flex-col items-center justify-center rounded-full border text-base font-semibold transition hover:-translate-y-0.5 hover:shadow-md ${
                   r
                     ? "border-transparent bg-[var(--accent-soft)] text-[var(--accent-strong)]"
                     : "border-[var(--grid)] bg-[var(--card)]"

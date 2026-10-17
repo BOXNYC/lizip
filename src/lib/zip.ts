@@ -78,9 +78,11 @@ export function stepTo(ix: PuzzleIndex, path: number[], cell: number): number[] 
  * cells in between — fast drags can skip cells between pointer events.
  */
 export function moveToward(ix: PuzzleIndex, path: number[], target: number): number[] {
+  const idx = path.indexOf(target);
+  if (idx >= 0) return retraceTo(ix, path, idx);
   const direct = stepTo(ix, path, target);
   if (direct) return direct;
-  if (!path.length || path.includes(target)) return path;
+  if (!path.length) return path;
   const { size } = ix;
   let cur = path;
   for (let guard = 0; guard < size * 2; guard++) {
@@ -101,6 +103,31 @@ export function moveToward(ix: PuzzleIndex, path: number[], target: number): num
     cur = next;
   }
   return cur;
+}
+
+/**
+ * Dragging onto a cell already in the path only backs up when retracing the
+ * line itself: the previous cell, or a few cells back in a straight run (fast
+ * drags skip cells). Crossing over any other part of the path is ignored.
+ */
+function retraceTo(ix: PuzzleIndex, path: number[], idx: number): number[] {
+  const back = path.length - 1 - idx;
+  if (back === 0 || back > 3) return path;
+  const { size } = ix;
+  const head = path[path.length - 1];
+  const step = path[path.length - 2] - head;
+  for (let k = 1; k <= back; k++) {
+    if (path[path.length - 1 - k] !== head + step * k) return path;
+  }
+  if (back > 1 && Math.abs(step) === 1 && Math.floor(head / size) !== Math.floor(path[idx] / size)) return path;
+  return path.slice(0, idx + 1);
+}
+
+/** Whether a drag may move onto this cell: extend forward or retrace one step. */
+export function canDragTo(ix: PuzzleIndex, path: number[], cell: number): boolean {
+  if (path.length >= 2 && path[path.length - 2] === cell) return true;
+  if (path.includes(cell)) return false;
+  return stepTo(ix, path, cell) !== null;
 }
 
 /** Path for a hint: the correct prefix extended through the next numbered cell. */

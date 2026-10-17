@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Board from "@/components/Board";
 import { saveResult, useProgress } from "@/lib/progress";
-import { DIFFICULTIES, PUZZLES, formatTime, hintPath, indexPuzzle, moveToward, stepTo, type Difficulty } from "@/lib/zip";
+import { DIFFICULTIES, PUZZLES, canDragTo, formatTime, hintPath, indexPuzzle, moveToward, stepTo, type Difficulty } from "@/lib/zip";
 
 interface GameProps {
   difficulty: Difficulty;
   number: number;
   onBack: () => void;
+  onReplay: () => void;
   onNext: (() => void) | null;
 }
 
@@ -19,7 +20,7 @@ const ARROWS: Record<string, [number, number]> = {
   ArrowRight: [0, 1],
 };
 
-export default function Game({ difficulty, number, onBack, onNext }: GameProps) {
+export default function Game({ difficulty, number, onBack, onReplay, onNext }: GameProps) {
   const puzzle = PUZZLES[difficulty][number - 1];
   const ix = useMemo(() => indexPuzzle(puzzle), [puzzle]);
   const progress = useProgress();
@@ -156,7 +157,7 @@ export default function Game({ difficulty, number, onBack, onNext }: GameProps) 
             if (next) update(next);
           }}
           onDrag={(cell) => update(moveToward(ix, pathRef.current, cell))}
-          canMoveTo={(cell) => stepTo(ix, path, cell) !== null}
+          canMoveTo={(cell) => canDragTo(ix, path, cell)}
           onRelease={() => {
             const start = gestureStart.current;
             gestureStart.current = null;
@@ -168,6 +169,9 @@ export default function Game({ difficulty, number, onBack, onNext }: GameProps) 
       {solved ? (
         <div className="mt-4 flex items-center justify-center gap-3">
           <span className="font-semibold tabular-nums">Solved in {formatTime(solvedIn)}</span>
+          <button className="btn-pill" onClick={onReplay}>
+            Replay
+          </button>
           {onNext && (
             <button className="btn-pill" onClick={onNext}>
               Next puzzle
@@ -220,11 +224,16 @@ export default function Game({ difficulty, number, onBack, onNext }: GameProps) 
               {hints > 0 && ` ${hints} hint${hints > 1 ? "s" : ""} used`}
             </p>
             <div className="mt-4 flex flex-col gap-2">
-              {onNext && (
-                <button className="btn-primary" onClick={onNext}>
-                  Next puzzle
+              <div className="flex gap-2">
+                <button className={onNext ? "btn-secondary" : "btn-primary"} onClick={onReplay}>
+                  Replay
                 </button>
-              )}
+                {onNext && (
+                  <button className="btn-primary" onClick={onNext}>
+                    Next puzzle
+                  </button>
+                )}
+              </div>
               <button className="btn-secondary" onClick={onBack}>
                 All puzzles
               </button>

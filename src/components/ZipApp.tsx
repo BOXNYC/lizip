@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Game from "@/components/Game";
 import PuzzleList from "@/components/PuzzleList";
 import { PUZZLES, isDifficulty, type Difficulty } from "@/lib/zip";
@@ -42,15 +42,18 @@ function go(difficulty: Difficulty, number?: number) {
 export default function ZipApp() {
   const hash = useSyncExternalStore(subscribe, getHash, getServerHash);
   const { difficulty, number } = parse(hash);
+  // Bumped to remount the current puzzle fresh for a replay.
+  const [round, setRound] = useState(0);
 
   if (number) {
     const total = PUZZLES[difficulty].length;
     return (
       <Game
-        key={`${difficulty}-${number}`}
+        key={`${difficulty}-${number}-${round}`}
         difficulty={difficulty}
         number={number}
         onBack={() => go(difficulty)}
+        onReplay={() => setRound((r) => r + 1)}
         onNext={number < total ? () => go(difficulty, number + 1) : null}
       />
     );
